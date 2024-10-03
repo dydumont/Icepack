@@ -1700,13 +1700,40 @@
                        ! Cp = (g/2)*(rhow-rhoi)*(rhoi/rhow)
                        ! Cf accounts for frictional dissipation
 
-      else                      ! kstrength /= 1:  Hibler (1979) form
+      elseif (kstrength == 0) then  ! Hibler (1979) form
 
       !-----------------------------------------------------------------
       ! Compute ice strength as in Hibler (1979)
       !-----------------------------------------------------------------
 
          strength = Pstar*vice*exp(-Cstar*(c1-aice))
+
+
+      elseif (kstrength == 2) then  ! Auclair (2022) form
+
+      !-----------------------------------------------------------------
+      ! Compute ice strength as in Auclair (2022)
+      !-----------------------------------------------------------------
+
+         strength = Pstar*vice*tanh(0.5*vice)*exp(-Cstar*(c1-aice))
+
+
+      elseif (kstrength == 3) then  ! Mohr Coulomb form
+
+      !-----------------------------------------------------------------
+      ! Compute ice strength as in Mohr Coulomb
+      !-----------------------------------------------------------------
+
+         strength = 1142.54*(vice**2)*exp(-Cstar*(c1-aice))
+
+
+      elseif (kstrength == 4) then  ! VD form
+
+      !-----------------------------------------------------------------
+      ! Compute ice strength as in VD
+      !-----------------------------------------------------------------
+
+         strength = 9*vice*tanh(0.5*vice*1)*exp(-Cstar*(c1-aice))
 
       endif                     ! kstrength
 
