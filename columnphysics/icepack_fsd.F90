@@ -43,8 +43,9 @@
       module icepack_fsd
 
       use icepack_kinds
-      use icepack_parameters, only: c0, c1, c2, c4, p01, p1, p5, puny
+      use icepack_parameters, only: c0, c1, c2, c4, p01, p1, p5, puny, Pstar, Cstar
       use icepack_parameters, only: pi, floeshape, wave_spec, bignum, gravit, rhoi
+      use icepack_parameters, only: kstrength
       use icepack_tracers, only: nt_fsd, tr_fsd
       use icepack_warnings, only: warnstr, icepack_warnings_add
       use icepack_warnings, only: icepack_warnings_setabort, icepack_warnings_aborted
@@ -53,7 +54,7 @@
 
       private
       public :: icepack_init_fsd_bounds, icepack_init_fsd, icepack_cleanup_fsd, &
-         fsd_lateral_growth, fsd_add_new_ice, fsd_weld_thermo, get_subdt_fsd
+         fsd_lateral_growth, fsd_add_new_ice, fsd_weld_thermo, calcul_fsd_diam, icepack_fsd_strength, get_subdt_fsd 
 
       real(kind=dbl_kind), dimension(:), allocatable ::  &
          floe_rad_h,         & ! fsd size higher bound in m (radius)
@@ -302,6 +303,13 @@
             num_fsd(k) = (2*floe_rad_c(k))**(-alpha-c1) ! number distribution of floes
             afsd   (k) = num_fsd(k)*floe_area_c(k)*floe_binwidth(k) ! fraction distribution of floes
             totfrac = totfrac + afsd(k)
+
+ 
+!        
+!         totfrac = c1
+!         afsd(1:nfsd-2) = c0
+!         afsd(nfsd-1 : nfsd) = totfrac/c2
+
          enddo
          afsd = afsd/totfrac                    ! normalize
 
@@ -1030,6 +1038,93 @@
       end do    ! k
 
       end subroutine fsd_weld_thermo
+
+!=======================================================================
+!autodocument_start calcul_fsd_diam
+!
+
+      subroutine calcul_fsd_diam (ncat, nfsd,     &
+				 floe_rad_c,      &
+                                 trcrn,           &
+                                 aice    ,        &
+                                 aicen   ,        &
+                                 floe_avg_d)
+
+      integer (kind=int_kind), intent(in) :: &
+         ncat  , &  ! number of thickness categories
+         nfsd       ! number of floe size categories
+
+      real(kind=dbl_kind), dimension(:), intent(in) ::  &
+         floe_rad_c     ! fsd size bin centre in m (radius)
+
+      real (kind=dbl_kind), intent(in) :: &
+         aice     ! concentration of ice
+
+      real (kind=dbl_kind), dimension(:), intent(in) :: &
+         aicen  ! concentration of ice
+
+      real (kind=dbl_kind), dimension (:,:), intent(in) :: &
+         trcrn     ! tracer
+
+      real (kind=dbl_kind), intent(inout) :: &
+         floe_avg_d ! average floe diameter (m)
+
+      integer (kind=int_kind) :: &
+	 nc, &
+	 k
+
+!autodocument_end
+
+      character(len=*),parameter :: subname='(calcul_fsd_diam)'
+
+      floe_avg_d = 0.0
+
+      do nc = 1, ncat
+      do k = 1, nfsd
+          floe_avg_d = floe_avg_d + trcrn(nt_fsd+k-1,nc) * floe_rad_c(k) &
+                        * aicen(nc) / aice
+      enddo
+      enddo
+      ! write(*,*) floe_avg_d
+
+
+      end subroutine calcul_fsd_diam
+
+!=======================================================================
+!autodocument_start icepack_fsd_strength
+! Compute the strength of the ice pack, defined as the energy (J m-2)
+! dissipated per unit area removed from the ice pack under compression,
+! and assumed proportional to the change in potential energy caused
+! by ridging.
+!
+
+      subroutine icepack_fsd_strength (aice,     vice,     &
+                                       floe_avg_d, strength)
+
+      real (kind=dbl_kind), intent(in) :: &
+         aice   , & ! concentration of ice
+         vice   , & ! volume per unit area of ice  (m)
+	 floe_avg_d ! average floe diameter (m)
+
+
+      real (kind=dbl_kind), intent(inout) :: &
+         strength   ! ice strength (N/m)
+
+!autodocument_end
+
+      character(len=*),parameter :: subname='(icepack_fsd_strength)'
+
+      if (kstrength == 4) then  ! VD
+
+      !-----------------------------------------------------------------
+      ! Compute ice strength as in VD
+      !-----------------------------------------------------------------
+
+         strength = Pstar*vice*tanh(0.05*vice*floe_avg_d)*exp(-Cstar*(c1-aice))
+
+      endif                     ! kstrength
+
+      end subroutine icepack_fsd_strength
 
 !=======================================================================
 !
