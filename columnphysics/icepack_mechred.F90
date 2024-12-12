@@ -1733,12 +1733,11 @@
       ! Compute ice strength as in VD
       !-----------------------------------------------------------------
 
-         strength = Pstar*vice*tanh(0.05*vice*200)*exp(-Cstar*(c1-aice))
+         strength = Pstar*vice*tanh(0.05*vice*1)*exp(-Cstar*(c1-aice))
 
       endif                     ! kstrength
 
       end subroutine icepack_ice_strength
-
 !=======================================================================
 !autodocument_start icepack_step_ridge
 ! Computes sea ice mechanical deformation

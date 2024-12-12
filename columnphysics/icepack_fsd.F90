@@ -63,6 +63,8 @@
          floe_area_c,        & ! fsd area at bin centre (m^2)
          floe_area_binwidth    ! floe area bin width (m^2)
 
+
+
       integer(kind=int_kind), dimension(:,:), allocatable, public ::  &
          iweld                 ! floe size categories that can combine
                                ! during welding (dimensionless)
@@ -297,21 +299,21 @@
 
          ! fraction of ice in each floe size and thickness category
          ! same for ALL cells (even where no ice) initially
-         alpha = 2.1_dbl_kind
-         totfrac = c0                                   ! total fraction of floes
-         do k = 1, nfsd
-            num_fsd(k) = (2*floe_rad_c(k))**(-alpha-c1) ! number distribution of floes
-            afsd   (k) = num_fsd(k)*floe_area_c(k)*floe_binwidth(k) ! fraction distribution of floes
-            totfrac = totfrac + afsd(k)
+!         alpha = 2.1_dbl_kind
+!         totfrac = c0                                   ! total fraction of floes
+!         do k = 1, nfsd
+!            num_fsd(k) = (2*floe_rad_c(k))**(-alpha-c1) ! number distribution of floes
+!            afsd   (k) = num_fsd(k)*floe_area_c(k)*floe_binwidth(k) ! fraction distribution of floes
+!            totfrac = totfrac + afsd(k)
 
  
-!        
+        
 !         totfrac = c1
 !         afsd(1:nfsd-2) = c0
 !         afsd(nfsd-1 : nfsd) = totfrac/c2
 
-         enddo
-         afsd = afsd/totfrac                    ! normalize
+!         enddo
+!         afsd = afsd/totfrac                    ! normalize
 
       endif ! ice_ic
 
@@ -1079,12 +1081,15 @@
 
       floe_avg_d = 0.0
 
+      if (aice > puny) then
+
       do nc = 1, ncat
       do k = 1, nfsd
-          floe_avg_d = floe_avg_d + trcrn(nt_fsd+k-1,nc) * floe_rad_c(k) &
-                        * aicen(nc) / aice
+          	floe_avg_d = floe_avg_d + (trcrn(nt_fsd+k-1,nc) * floe_rad_c(k) &
+                        * aicen(nc) / aice)   
       enddo
       enddo
+      endif
       ! write(*,*) floe_avg_d
 
 
