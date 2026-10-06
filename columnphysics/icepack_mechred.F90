@@ -1715,7 +1715,7 @@
       ! Compute ice strength as in Auclair (2022)
       !-----------------------------------------------------------------
 
-         strength = Pstar*vice*tanh(0.5*vice)*exp(-Cstar*(c1-aice))
+         strength = Pstar*vice*tanh(0.033*vice*1.25)*exp(-Cstar*(c1-aice))
 
 
       elseif (kstrength == 3) then  ! Mohr Coulomb form
@@ -1733,7 +1733,7 @@
       ! Compute ice strength as in VD
       !-----------------------------------------------------------------
 
-         strength = Pstar*vice*tanh(0.05*vice*1)*exp(-Cstar*(c1-aice))
+         strength = Pstar*vice*tanh(0.04166*vice*10.0)*exp(-Cstar*(c1-aice))
 
       endif                     ! kstrength
 
